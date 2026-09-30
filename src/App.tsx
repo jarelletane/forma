@@ -208,6 +208,43 @@ export function App() {
   );
   const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   useEffect(() => {
+    const container = root.current;
+    if (!container || reduce()) return;
+    const press = (event: PointerEvent) => {
+      const button = (event.target as HTMLElement).closest("button");
+      if (!button || !container.contains(button)) return;
+      gsap
+        .timeline()
+        .to(button, { scale: 0.965, duration: 0.09, ease: "power2.out" })
+        .to(button, { scale: 1, duration: 0.34, ease: "back.out(3)" });
+
+      if (
+        !button.matches(
+          ".primary, .process-cta, .floating-review, .export-button",
+        )
+      )
+        return;
+      const pulse = document.createElement("span");
+      pulse.className = "click-pulse";
+      pulse.style.left = `${event.clientX}px`;
+      pulse.style.top = `${event.clientY}px`;
+      document.body.appendChild(pulse);
+      gsap.fromTo(
+        pulse,
+        { scale: 0, opacity: 0.42 },
+        {
+          scale: 1,
+          opacity: 0,
+          duration: 0.55,
+          ease: "power2.out",
+          onComplete: () => pulse.remove(),
+        },
+      );
+    };
+    container.addEventListener("pointerdown", press);
+    return () => container.removeEventListener("pointerdown", press);
+  }, []);
+  useEffect(() => {
     if (reduce()) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
