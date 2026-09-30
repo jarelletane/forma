@@ -1,81 +1,1145 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import gsap from 'gsap';
-import { Flip } from 'gsap/Flip';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import gsap from "gsap";
+import { Flip } from "gsap/Flip";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(Flip, ScrollTrigger);
 
-type Stage='start'|'rooms'|'budget'|'owned'|'priority'|'matching'|'results'|'plan-loading'|'checkout';
-type Priority='High'|'Mid'|'Low';
-type Room={id:number;name:string;width:number;length:number};
-type Product={id:number;name:string;category:string;price:number;width:number;depth:number;priority:Priority;source:string};
-const allItems=['Sofa','Fridge','Washing machine','Bed','Dining table','Dining chairs','Coffee table','Floor lamp','Rug','Side table','Artwork','Vases'];
-const products:Product[]=[
- {id:1,name:'Marlow three-seat sofa',category:'Sofa',price:1890,width:224,depth:94,priority:'High',source:'In stock'},
- {id:2,name:'Rove lounge chair',category:'Chair',price:640,width:76,depth:82,priority:'Mid',source:'Marketplace'},
- {id:3,name:'Nord 420 fridge',category:'Fridge',price:1290,width:70,depth:69,priority:'High',source:'In stock'},
- {id:4,name:'Daily front loader',category:'Washing machine',price:780,width:60,depth:64,priority:'High',source:'In stock'},
- {id:5,name:'Field oak dining table',category:'Dining table',price:980,width:180,depth:90,priority:'Mid',source:'Made to order'},
- {id:6,name:'Cove dining chair',category:'Dining chairs',price:220,width:49,depth:52,priority:'Mid',source:'Marketplace'},
- {id:7,name:'Lowline coffee table',category:'Coffee table',price:460,width:110,depth:60,priority:'Mid',source:'In stock'},
- {id:8,name:'Ridge floor lamp',category:'Floor lamp',price:420,width:32,depth:32,priority:'Mid',source:'Marketplace'},
- {id:9,name:'Textile study rug',category:'Rug',price:890,width:240,depth:170,priority:'Mid',source:'In stock'},
- {id:10,name:'Plinth side table',category:'Side table',price:310,width:46,depth:40,priority:'Low',source:'In stock'},
- {id:11,name:'Contour print 02',category:'Artwork',price:180,width:60,depth:4,priority:'Low',source:'Edition'},
- {id:12,name:'Pair of stone vessels',category:'Vases',price:140,width:24,depth:24,priority:'Low',source:'Marketplace'},
+type Stage =
+  | "start"
+  | "rooms"
+  | "budget"
+  | "owned"
+  | "priority"
+  | "matching"
+  | "results"
+  | "plan-loading"
+  | "checkout";
+type Priority = "High" | "Mid" | "Low";
+type Room = { id: number; name: string; width: number; length: number };
+type Product = {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  width: number;
+  depth: number;
+  priority: Priority;
+  source: string;
+};
+const allItems = [
+  "Sofa",
+  "Fridge",
+  "Washing machine",
+  "Bed",
+  "Dining table",
+  "Dining chairs",
+  "Coffee table",
+  "Floor lamp",
+  "Rug",
+  "Side table",
+  "Artwork",
+  "Vases",
 ];
-const stageOrder:Stage[]=['rooms','budget','owned','priority'];
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Marlow three-seat sofa",
+    category: "Sofa",
+    price: 1890,
+    width: 224,
+    depth: 94,
+    priority: "High",
+    source: "In stock",
+  },
+  {
+    id: 2,
+    name: "Rove lounge chair",
+    category: "Chair",
+    price: 640,
+    width: 76,
+    depth: 82,
+    priority: "Mid",
+    source: "Marketplace",
+  },
+  {
+    id: 3,
+    name: "Nord 420 fridge",
+    category: "Fridge",
+    price: 1290,
+    width: 70,
+    depth: 69,
+    priority: "High",
+    source: "In stock",
+  },
+  {
+    id: 4,
+    name: "Daily front loader",
+    category: "Washing machine",
+    price: 780,
+    width: 60,
+    depth: 64,
+    priority: "High",
+    source: "In stock",
+  },
+  {
+    id: 5,
+    name: "Field oak dining table",
+    category: "Dining table",
+    price: 980,
+    width: 180,
+    depth: 90,
+    priority: "Mid",
+    source: "Made to order",
+  },
+  {
+    id: 6,
+    name: "Cove dining chair",
+    category: "Dining chairs",
+    price: 220,
+    width: 49,
+    depth: 52,
+    priority: "Mid",
+    source: "Marketplace",
+  },
+  {
+    id: 7,
+    name: "Lowline coffee table",
+    category: "Coffee table",
+    price: 460,
+    width: 110,
+    depth: 60,
+    priority: "Mid",
+    source: "In stock",
+  },
+  {
+    id: 8,
+    name: "Ridge floor lamp",
+    category: "Floor lamp",
+    price: 420,
+    width: 32,
+    depth: 32,
+    priority: "Mid",
+    source: "Marketplace",
+  },
+  {
+    id: 9,
+    name: "Textile study rug",
+    category: "Rug",
+    price: 890,
+    width: 240,
+    depth: 170,
+    priority: "Mid",
+    source: "In stock",
+  },
+  {
+    id: 10,
+    name: "Plinth side table",
+    category: "Side table",
+    price: 310,
+    width: 46,
+    depth: 40,
+    priority: "Low",
+    source: "In stock",
+  },
+  {
+    id: 11,
+    name: "Contour print 02",
+    category: "Artwork",
+    price: 180,
+    width: 60,
+    depth: 4,
+    priority: "Low",
+    source: "Edition",
+  },
+  {
+    id: 12,
+    name: "Pair of stone vessels",
+    category: "Vases",
+    price: 140,
+    width: 24,
+    depth: 24,
+    priority: "Low",
+    source: "Marketplace",
+  },
+];
+const stageOrder: Stage[] = ["rooms", "budget", "owned", "priority"];
 
-function Placeholder({product}:{product:Product}){return <div className={`placeholder priority-${product.priority.toLowerCase()}`} aria-label={`Image placeholder for ${product.name}`} role="img"><span>{product.category}</span><i/><small>Image coming soon</small></div>}
-
-export function App(){
- const root=useRef<HTMLDivElement>(null),grid=useRef<HTMLDivElement>(null);
- const [stage,setStage]=useState<Stage>('start');
- const [rooms,setRooms]=useState<Room[]>([{id:1,name:'Lounge',width:420,length:510}]);
- const [budget,setBudget]=useState(6500),[owned,setOwned]=useState<string[]>(['Bed']),[priorities,setPriorities]=useState<Record<string,Priority>>({Sofa:'High',Fridge:'High','Washing machine':'High','Dining table':'Mid',Rug:'Mid',Vases:'Low'});
- const [filter,setFilter]=useState<Priority|'All'>('All'),[saved,setSaved]=useState<number[]>([1,3,5,9]);
- const [detail,setDetail]=useState<Product|null>(null);
- const visible=useMemo(()=>products.filter(p=>filter==='All'||p.priority===filter),[filter]);
- const total=saved.reduce((sum,id)=>sum+(products.find(p=>p.id===id)?.price||0),0);
- const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
- useEffect(()=>{if(reduce())return;const ctx=gsap.context(()=>{
-  gsap.fromTo('.stage-enter',{y:28,opacity:0},{y:0,opacity:1,duration:.65,ease:'power3.out',stagger:.07});
-  if(stage==='start'){
-   gsap.fromTo('.logo-mark path',{strokeDasharray:120,strokeDashoffset:120},{strokeDashoffset:0,duration:1.2,ease:'power2.inOut'});
-   gsap.from('.landing-grid div',{scale:.72,rotation:(i)=>[-7,6,-4][i]||0,opacity:0,stagger:.12,duration:1,ease:'power3.out',delay:.25});
-   gsap.to('.landing-grid div:nth-child(1)',{y:-55,scrollTrigger:{trigger:'.landing-hero',start:'top top',end:'bottom top',scrub:.8}});
-   gsap.to('.landing-grid div:nth-child(2)',{y:75,scrollTrigger:{trigger:'.landing-hero',start:'top top',end:'bottom top',scrub:.8}});
-   gsap.to('.landing-grid div:nth-child(3)',{x:45,y:-25,scrollTrigger:{trigger:'.landing-hero',start:'top top',end:'bottom top',scrub:.8}});
-   gsap.timeline({scrollTrigger:{trigger:'.how-it-works',start:'top 68%',end:'bottom 82%',scrub:.65}}).from('.how-it-works header>*',{y:35,opacity:0,stagger:.08}).from('.how-step',{y:55,opacity:.15,stagger:.14},.1).to('.how-progress i',{scaleX:1,ease:'none'},0).to('.how-step',{backgroundColor:'#f0ede5',stagger:.14,duration:.18},.18);
-  }
- },root);return()=>ctx.revert()},[stage]);
- useEffect(()=>{if(stage!=='matching')return;if(reduce()){setStage('results');return}const ctx=gsap.context(()=>{gsap.timeline({onComplete:()=>setStage('results')}).from('.match-ring',{scale:.7,opacity:0,duration:.45}).to('.match-ring',{rotation:180,duration:1.25,ease:'power2.inOut'}).from('.match-chip',{y:20,opacity:0,stagger:.1,duration:.45},.2).to('.matching',{opacity:0,duration:.3},1.65)},root);return()=>ctx.revert()},[stage]);
- useEffect(()=>{if(stage!=='plan-loading')return;if(reduce()){setStage('checkout');return}const ctx=gsap.context(()=>{gsap.timeline({onComplete:()=>setStage('checkout')}).from('.plan-loader-ring',{scale:.65,opacity:0,rotation:-45,duration:.5,ease:'power3.out'}).to('.plan-loader-ring i',{scaleX:1,duration:1.25,ease:'power2.inOut'}).from('.loader-label span',{yPercent:110,stagger:.08,duration:.45,ease:'power3.out'},.1).to('.plan-loading',{opacity:0,duration:.3},1.55)},root);return()=>ctx.revert()},[stage]);
- useEffect(()=>{if(stage!=='results')return;const ctx=gsap.context(()=>{if(!reduce()){gsap.from('.product-card',{y:45,opacity:0,stagger:.055,duration:.65,ease:'power3.out'});if(innerWidth>768)gsap.timeline({scrollTrigger:{trigger:'.board-story',start:'top top',end:'+=110%',pin:'.board-inner',scrub:.7}}).from('.board-pin',{x:()=>gsap.utils.random(-180,180),y:()=>gsap.utils.random(-120,120),rotation:()=>gsap.utils.random(-12,12),opacity:.2,stagger:.05}).to('.story-progress i',{scaleX:1},0)}},root);return()=>ctx.revert()},[stage]);
- useEffect(()=>{if(stage!=='checkout')return;const cards=[...document.querySelectorAll<HTMLElement>('.checkout-pin')];const cleanups=cards.map((card,index)=>{const product=products.find(p=>p.id===saved[index]);if(!product)return()=>{};card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',`View details for ${product.name}`);const open=()=>setDetail(product);const key=(event:KeyboardEvent)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open()}};card.addEventListener('click',open);card.addEventListener('keydown',key);return()=>{card.removeEventListener('click',open);card.removeEventListener('keydown',key)}});return()=>cleanups.forEach(clean=>clean())},[stage,saved]);
- useEffect(()=>{if(!detail)return;const close=(event:KeyboardEvent)=>event.key==='Escape'&&setDetail(null);document.addEventListener('keydown',close);if(!reduce())gsap.fromTo('.product-dialog',{x:60,opacity:0},{x:0,opacity:1,duration:.45,ease:'power3.out'});return()=>document.removeEventListener('keydown',close)},[detail]);
- const next=(from:Stage)=>setStage(stageOrder[stageOrder.indexOf(from)+1]||'matching');
- const back=()=>{const i=stageOrder.indexOf(stage);setStage(i<=0?'start':stageOrder[i-1])};
- const toggle=(value:string,list:string[],setter:(v:string[])=>void)=>setter(list.includes(value)?list.filter(x=>x!==value):[...list,value]);
- const updateRoom=(id:number,key:keyof Room,value:string)=>setRooms(rs=>rs.map(r=>r.id===id?{...r,[key]:key==='name'?value:Number(value)}:r));
- const addRoom=()=>setRooms(rs=>[...rs,{id:Date.now(),name:'Bedroom',width:350,length:400}]);
- function changeFilter(next:Priority|'All'){const state=Flip.getState('.product-card');setFilter(next);requestAnimationFrame(()=>Flip.from(state,{duration:.5,ease:'power2.inOut',absolute:true}))}
-
- return <div ref={root}><header className="topbar"><button className="logo" onClick={()=>setStage('start')} aria-label="Forma home"><svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27.5C9.1 27.5 4.5 23 4.5 16.8 4.5 9.9 9.4 4.5 16.4 4.5c6.6 0 11.1 4.4 11.1 10.2 0 5.5-3.8 9.2-8.6 9.2-4.5 0-7.6-3-7.6-6.9 0-3.6 2.5-6 5.6-6 2.9 0 4.8 1.9 4.8 4.3 0 2.2-1.4 3.6-3.3 3.6-1.6 0-2.7-1-2.7-2.3"/></svg><span className="logo-type">Forma</span></button><span>{stage==='start'?'A considered way to furnish your home':stage==='results'?'Your furnishing plan':stage==='checkout'?'Your final reference board':stage==='plan-loading'?'Composing your plan':`Set up your home · ${Math.max(stageOrder.indexOf(stage)+1,1)} / 4`}</span><span className="user">JM</span></header>
- {stage==='start'&&<main className="landing"><section className="landing-hero"><div className="landing-copy"><span className="kicker stage-enter">A home, thoughtfully put together</span><h1><span className="stage-enter">Find what fits.</span><span className="stage-enter"><i>Keep what matters.</i></span></h1><p className="stage-enter">Tell Forma about your rooms, your budget and what you already own. We’ll turn it into a practical, prioritized furnishing plan.</p><button className="primary start-cta stage-enter" onClick={()=>setStage('rooms')}><span><small>Free planning flow</small>Start planning your home</span><b>→</b></button></div><div className="landing-grid stage-enter"><div><small>01 / Space</small></div><div><small>02 / Budget</small></div><div><small>03 / Priorities</small></div><span>One considered plan</span></div><span className="scroll-cue">Scroll to understand <b>↓</b></span></section><section className="how-it-works" aria-labelledby="how-title"><header><span className="kicker">How Forma works</span><h2 id="how-title">A plan before<br/><i>the purchases.</i></h2><p>From empty rooms to a prioritized shortlist in four considered steps.</p></header><div className="how-progress" aria-hidden="true"><i/></div><div className="how-grid"><article className="how-step"><span>01</span><h3>Map your rooms</h3><p>Add each space and its measurements, so every recommendation has somewhere to live.</p></article><article className="how-step"><span>02</span><h3>Set your budget</h3><p>Choose one realistic budget for the home. Forma keeps the whole plan in view.</p></article><article className="how-step"><span>03</span><h3>Keep what works</h3><p>Tell us what you already own. Good pieces stay; unnecessary replacements disappear.</p></article><article className="how-step"><span>04</span><h3>Choose priorities</h3><p>Essentials first, furniture next, finishing touches last—then receive your matched plan.</p></article></div><button className="process-cta" onClick={()=>setStage('rooms')}>Build my furnishing plan <b>→</b></button></section></main>}
- {stageOrder.includes(stage)&&<main className="onboarding"><button className="back stage-enter" onClick={back}>← Back</button>
-  {stage==='rooms'&&<section className="step-layout"><StepCopy n="01" title={<>Which rooms<br/><i>are you furnishing?</i></>} text="Measurements help us rule out pieces that won’t physically work."/><div className="step-panel stage-enter">{rooms.map((r,index)=><div className="room-row" key={r.id}><label>Room {index+1}<input value={r.name} onChange={e=>updateRoom(r.id,'name',e.target.value)}/></label><label>Width<span><input type="number" value={r.width} onChange={e=>updateRoom(r.id,'width',e.target.value)}/> cm</span></label><label>Length<span><input type="number" value={r.length} onChange={e=>updateRoom(r.id,'length',e.target.value)}/> cm</span></label></div>)}<button className="add" onClick={addRoom}>＋ Add another room</button><Next onClick={()=>next('rooms')}/></div></section>}
-  {stage==='budget'&&<section className="step-layout"><StepCopy n="02" title={<>Set a budget<br/><i>for the whole home.</i></>} text="We’ll allocate more to essential pieces, while leaving room for finishing touches."/><div className="step-panel budget-panel stage-enter"><span>Your furnishing budget</span><label>$ <input type="number" value={budget} onChange={e=>setBudget(+e.target.value)}/></label><input type="range" min="1000" max="20000" step="500" value={budget} onChange={e=>setBudget(+e.target.value)}/><div><span>$1k</span><span>$20k</span></div><Next onClick={()=>next('budget')}/></div></section>}
-  {stage==='owned'&&<section className="step-layout"><StepCopy n="03" title={<>What do you<br/><i>already own?</i></>} text="We won’t recommend replacements for pieces you want to keep."/><div className="step-panel stage-enter"><div className="choice-grid">{allItems.map(item=><button className={owned.includes(item)?'selected':''} onClick={()=>toggle(item,owned,setOwned)} key={item}><i>{owned.includes(item)?'✓':'+'}</i>{item}</button>)}</div><Next onClick={()=>next('owned')}/></div></section>}
-  {stage==='priority'&&<section className="step-layout"><StepCopy n="04" title={<>What matters<br/><i>most right now?</i></>} text="We’ll solve essentials first, then work down to the details."/><div className="step-panel stage-enter"><div className="priority-list">{Object.entries(priorities).map(([item,priority])=><div key={item}><span>{item}</span><div>{(['High','Mid','Low'] as Priority[]).map(p=><button className={priority===p?'selected':''} onClick={()=>setPriorities(v=>({...v,[item]:p}))} key={p}>{p}</button>)}</div></div>)}</div><Next label="Build my plan" onClick={()=>next('priority')}/></div></section>}
- </main>}
- {stage==='matching'&&<main className="matching"><div className="match-ring"><span>{rooms.length}</span><i/><span>${Math.round(budget/1000)}k</span></div><h1 className="stage-enter">Building your plan.</h1><div>{(['Rooms measured','Budget balanced','Priorities ranked'] as const).map(x=><span className="match-chip" key={x}>✓ {x}</span>)}</div></main>}
- {stage==='plan-loading'&&<main className="plan-loading"><div className="plan-loader-ring"><span>Forma</span><i/></div><h1 className="loader-label"><span>Composing</span><span><i>your final board.</i></span></h1><p>Gathering {saved.length} pieces · checking ${budget.toLocaleString()} budget</p></main>}
- {detail&&<div className="dialog-backdrop" onMouseDown={event=>event.target===event.currentTarget&&setDetail(null)}><section className="product-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><button autoFocus className="dialog-close" onClick={()=>setDetail(null)} aria-label="Close product details">×</button><div className="dialog-image"><Placeholder product={detail}/><span className={`priority-tag ${detail.priority.toLowerCase()}`}>{detail.priority} priority</span></div><span className="source">{detail.source}</span><h2 id="dialog-title">{detail.name}</h2><p className="dialog-category">{detail.category} · Recommended for your plan</p><div className="dialog-specs"><span><small>Price</small><b>${detail.price.toLocaleString()}</b></span><span><small>Dimensions</small><b>{detail.width}W × {detail.depth}D cm</b></span><span><small>Fit</small><b>{rooms.some(r=>detail.width<r.width*.72&&detail.depth<r.length*.5)?'Fits your rooms':'Check placement'}</b></span></div><p className="dialog-note">A suggested piece based on your available space, whole-home budget and current priorities.</p><button className="remove-plan" onClick={()=>{setSaved(s=>s.filter(id=>id!==detail.id));setDetail(null)}}>Remove from final plan</button></section></div>}
- {stage==='results'&&<button className="floating-review" onClick={()=>setStage('plan-loading')}><span><small>{saved.length} shortlisted pieces</small>Review final plan</span><b>→</b></button>}
- {stage==='checkout'&&<main className="checkout"><header className="checkout-head stage-enter"><button className="back" onClick={()=>setStage('results')}>← Back to recommendations</button><span className="kicker">Your final reference board</span><h1>Everything for<br/><i>your new home.</i></h1><p>Use this plan while you shop. Update priorities or remove pieces as your home comes together.</p></header><section className="checkout-layout"><div className="checkout-board stage-enter"><div className="checkout-board-head"><span><b>Forma</b>Whole-home board</span><span>{rooms.length} rooms · {saved.length} pieces</span></div><div className="checkout-canvas">{saved.slice(0,6).map((id,i)=>{const p=products.find(x=>x.id===id)!;return <article className={`checkout-pin checkout-pin-${i+1}`} key={id}><Placeholder product={p}/><span>{p.name}</span></article>})}</div><div className="checkout-board-foot"><span>Budget ${budget.toLocaleString()}</span><span>Updated today</span></div></div><div className="checkout-list stage-enter"><div className="checkout-list-head"><span className="kicker">Purchase list</span><b>{saved.length} items</b></div>{saved.map(id=>{const p=products.find(x=>x.id===id)!;return <article className="checkout-item" key={id}><div className="mini-placeholder"><span>{p.category.slice(0,1)}</span></div><div><h2>{p.name}</h2><p>{p.source} · {p.width} × {p.depth} cm</p><select aria-label={`Priority for ${p.name}`} defaultValue={p.priority}><option>High</option><option>Mid</option><option>Low</option></select></div><b>${p.price}</b><button onClick={()=>setSaved(s=>s.filter(x=>x!==id))} aria-label={`Remove ${p.name}`}>×</button></article>})}<div className="checkout-total"><span><small>Shortlist total</small>${total.toLocaleString()}</span><span><small>Budget remaining</small>${Math.max(budget-total,0).toLocaleString()}</span></div><button className="export-button" onClick={()=>window.print()}>Print or save this plan <b>↗</b></button></div></section></main>}
- {stage==='results'&&<main className="results"><section className="plan-head"><button className="back" onClick={()=>setStage('rooms')}>← Edit plan</button><span className="kicker stage-enter">Your home / furnishing plan</span><h1 className="stage-enter">Start with<br/><i>what matters.</i></h1><div className="summary stage-enter"><span><b>{rooms.length}</b>Rooms</span><span><b>${budget.toLocaleString()}</b>Budget</span><span><b>{owned.length}</b>Already owned</span><span><b>${total.toLocaleString()}</b>Shortlisted</span></div></section><section className="catalog"><div className="tools"><div className="filters">{(['All','High','Mid','Low'] as const).map(p=><button className={filter===p?'on':''} onClick={()=>changeFilter(p)} key={p}>{p}{p!=='All'?' priority':''}</button>)}</div><span className="recommend-note">Ranked around your needs and budget</span></div><div className="count"><span>{visible.length} suggested pieces</span><span>Grey boxes are image placeholders</span></div><div className="product-grid" ref={grid}>{visible.map((p,i)=>{const fit=rooms.some(r=>p.width<r.width*.72&&p.depth<r.length*.5);return <article className={`product-card offset-${i%3}`} data-flip-id={p.id} key={p.id}><div className="product-image"><Placeholder product={p}/><span className={`priority-tag ${p.priority.toLowerCase()}`}>{p.priority} priority</span><button aria-label={`${saved.includes(p.id)?'Remove':'Pin'} ${p.name}`} aria-pressed={saved.includes(p.id)} onClick={()=>setSaved(s=>s.includes(p.id)?s.filter(x=>x!==p.id):[...s,p.id])}>{saved.includes(p.id)?'✓':'+'}</button></div><span className="source">{p.source} · {fit?'Fits a room':'Check dimensions'}</span><h2>{p.name}</h2><p>{p.category}</p><div className="price"><b>${p.price}</b><span>{p.width}W × {p.depth}D cm</span></div></article>})}</div></section><section className="board-story"><div className="board-inner"><div className="story-copy"><span className="kicker">Your shortlist / resolved</span><h2>A home<br/><i>with intent.</i></h2><p>Essentials first. Finishing touches when you’re ready.</p><div className="story-steps"><span>01 Prioritize</span><span>02 Check fit</span><span>03 Compose</span><div className="story-progress"><i/></div></div><p className="budget-copy">${total.toLocaleString()} shortlisted · ${Math.max(budget-total,0).toLocaleString()} remaining</p></div><div className="board"><div className="board-surface"><span><b>Whole home</b>Purchase plan</span><small>{saved.length} pieces</small></div>{saved.slice(0,4).map((id,i)=>{const p=products.find(x=>x.id===id)!;return <div className={`board-pin pin-${i+1}`} key={id}><Placeholder product={p}/><span>{p.name}<b>${p.price}</b></span></div>})}</div></div></section></main>}
- </div>
+function Placeholder({ product }: { product: Product }) {
+  return (
+    <div
+      className={`placeholder priority-${product.priority.toLowerCase()}`}
+      aria-label={`Image placeholder for ${product.name}`}
+      role="img"
+    >
+      <span>{product.category}</span>
+      <i />
+      <small>Image coming soon</small>
+    </div>
+  );
 }
 
-function StepCopy({n,title,text}:{n:string;title:ReactNode;text:string}){return <div className="step-copy"><span className="kicker stage-enter">Step {n} / 04</span><h1 className="stage-enter">{title}</h1><p className="stage-enter">{text}</p></div>}
-function Next({onClick,label='Continue'}:{onClick:()=>void;label?:string}){return <button className="primary next" onClick={onClick}>{label}<b>→</b></button>}
+export function App() {
+  const root = useRef<HTMLDivElement>(null),
+    grid = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<Stage>("start");
+  const [rooms, setRooms] = useState<Room[]>([
+    { id: 1, name: "Lounge", width: 420, length: 510 },
+  ]);
+  const [budget, setBudget] = useState(6500),
+    [owned, setOwned] = useState<string[]>(["Bed"]),
+    [priorities, setPriorities] = useState<Record<string, Priority>>({
+      Sofa: "High",
+      Fridge: "High",
+      "Washing machine": "High",
+      "Dining table": "Mid",
+      Rug: "Mid",
+      Vases: "Low",
+    });
+  const [filter, setFilter] = useState<Priority | "All">("All"),
+    [saved, setSaved] = useState<number[]>([1, 3, 5, 9]);
+  const [detail, setDetail] = useState<Product | null>(null);
+  const visible = useMemo(
+    () => products.filter((p) => filter === "All" || p.priority === filter),
+    [filter],
+  );
+  const total = saved.reduce(
+    (sum, id) => sum + (products.find((p) => p.id === id)?.price || 0),
+    0,
+  );
+  const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  useEffect(() => {
+    if (reduce()) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".stage-enter",
+        { y: 28, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.65, ease: "power3.out", stagger: 0.07 },
+      );
+      if (stage === "start") {
+        gsap.fromTo(
+          ".logo-mark path",
+          { strokeDasharray: 120, strokeDashoffset: 120 },
+          { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" },
+        );
+        gsap.from(".landing-grid div", {
+          scale: 0.72,
+          rotation: (i) => [-7, 6, -4][i] || 0,
+          opacity: 0,
+          stagger: 0.12,
+          duration: 1,
+          ease: "power3.out",
+          delay: 0.25,
+        });
+        gsap.to(".landing-grid div:nth-child(1)", {
+          y: -55,
+          scrollTrigger: {
+            trigger: ".landing-hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        });
+        gsap.to(".landing-grid div:nth-child(2)", {
+          y: 75,
+          scrollTrigger: {
+            trigger: ".landing-hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        });
+        gsap.to(".landing-grid div:nth-child(3)", {
+          x: 45,
+          y: -25,
+          scrollTrigger: {
+            trigger: ".landing-hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        });
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: ".how-it-works",
+              start: "top 68%",
+              end: "bottom 82%",
+              scrub: 0.65,
+            },
+          })
+          .from(".how-it-works header>*", { y: 35, opacity: 0, stagger: 0.08 })
+          .from(".how-step", { y: 55, opacity: 0.15, stagger: 0.14 }, 0.1)
+          .to(".how-progress i", { scaleX: 1, ease: "none" }, 0)
+          .to(
+            ".how-step",
+            { backgroundColor: "#f0ede5", stagger: 0.14, duration: 0.18 },
+            0.18,
+          );
+      }
+    }, root);
+    return () => ctx.revert();
+  }, [stage]);
+  useEffect(() => {
+    if (stage !== "matching") return;
+    if (reduce()) {
+      setStage("results");
+      return;
+    }
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ onComplete: () => setStage("results") })
+        .from(".match-ring", { scale: 0.7, opacity: 0, duration: 0.45 })
+        .to(".match-ring", {
+          rotation: 180,
+          duration: 1.25,
+          ease: "power2.inOut",
+        })
+        .from(
+          ".match-chip",
+          { y: 20, opacity: 0, stagger: 0.1, duration: 0.45 },
+          0.2,
+        )
+        .to(".matching", { opacity: 0, duration: 0.3 }, 1.65);
+    }, root);
+    return () => ctx.revert();
+  }, [stage]);
+  useEffect(() => {
+    if (stage !== "plan-loading") return;
+    if (reduce()) {
+      setStage("checkout");
+      return;
+    }
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ onComplete: () => setStage("checkout") })
+        .from(".plan-loader-ring", {
+          scale: 0.65,
+          opacity: 0,
+          rotation: -45,
+          duration: 0.5,
+          ease: "power3.out",
+        })
+        .to(".plan-loader-ring i", {
+          scaleX: 1,
+          duration: 1.25,
+          ease: "power2.inOut",
+        })
+        .from(
+          ".loader-label span",
+          { yPercent: 110, stagger: 0.08, duration: 0.45, ease: "power3.out" },
+          0.1,
+        )
+        .to(".plan-loading", { opacity: 0, duration: 0.3 }, 1.55);
+    }, root);
+    return () => ctx.revert();
+  }, [stage]);
+  useEffect(() => {
+    if (stage !== "results") return;
+    const ctx = gsap.context(() => {
+      if (!reduce()) {
+        gsap.from(".product-card", {
+          y: 45,
+          opacity: 0,
+          stagger: 0.055,
+          duration: 0.65,
+          ease: "power3.out",
+        });
+        if (innerWidth > 768)
+          gsap
+            .timeline({
+              scrollTrigger: {
+                trigger: ".board-story",
+                start: "top top",
+                end: "+=110%",
+                pin: ".board-inner",
+                scrub: 0.7,
+              },
+            })
+            .from(".board-pin", {
+              x: () => gsap.utils.random(-180, 180),
+              y: () => gsap.utils.random(-120, 120),
+              rotation: () => gsap.utils.random(-12, 12),
+              opacity: 0.2,
+              stagger: 0.05,
+            })
+            .to(".story-progress i", { scaleX: 1 }, 0);
+      }
+    }, root);
+    return () => ctx.revert();
+  }, [stage]);
+  useEffect(() => {
+    if (stage !== "checkout") return;
+    const cards = [...document.querySelectorAll<HTMLElement>(".checkout-pin")];
+    const cleanups = cards.map((card, index) => {
+      const product = products.find((p) => p.id === saved[index]);
+      if (!product) return () => {};
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-label", `View details for ${product.name}`);
+      const open = () => setDetail(product);
+      const key = (event: KeyboardEvent) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open();
+        }
+      };
+      card.addEventListener("click", open);
+      card.addEventListener("keydown", key);
+      return () => {
+        card.removeEventListener("click", open);
+        card.removeEventListener("keydown", key);
+      };
+    });
+    return () => cleanups.forEach((clean) => clean());
+  }, [stage, saved]);
+  useEffect(() => {
+    if (!detail) return;
+    const close = (event: KeyboardEvent) =>
+      event.key === "Escape" && setDetail(null);
+    document.addEventListener("keydown", close);
+    if (!reduce())
+      gsap.fromTo(
+        ".product-dialog",
+        { x: 60, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.45, ease: "power3.out" },
+      );
+    return () => document.removeEventListener("keydown", close);
+  }, [detail]);
+  const next = (from: Stage) =>
+    setStage(stageOrder[stageOrder.indexOf(from) + 1] || "matching");
+  const back = () => {
+    const i = stageOrder.indexOf(stage);
+    setStage(i <= 0 ? "start" : stageOrder[i - 1]);
+  };
+  const toggle = (
+    value: string,
+    list: string[],
+    setter: (v: string[]) => void,
+  ) =>
+    setter(
+      list.includes(value) ? list.filter((x) => x !== value) : [...list, value],
+    );
+  const updateRoom = (id: number, key: keyof Room, value: string) =>
+    setRooms((rs) =>
+      rs.map((r) =>
+        r.id === id
+          ? { ...r, [key]: key === "name" ? value : Number(value) }
+          : r,
+      ),
+    );
+  const addRoom = () =>
+    setRooms((rs) => [
+      ...rs,
+      { id: Date.now(), name: "Bedroom", width: 350, length: 400 },
+    ]);
+  function changeFilter(next: Priority | "All") {
+    const state = Flip.getState(".product-card");
+    setFilter(next);
+    requestAnimationFrame(() =>
+      Flip.from(state, { duration: 0.5, ease: "power2.inOut", absolute: true }),
+    );
+  }
+
+  return (
+    <div ref={root}>
+      <header className="topbar">
+        <button
+          className="logo"
+          onClick={() => setStage("start")}
+          aria-label="Forma home"
+        >
+          <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 27.5C9.1 27.5 4.5 23 4.5 16.8 4.5 9.9 9.4 4.5 16.4 4.5c6.6 0 11.1 4.4 11.1 10.2 0 5.5-3.8 9.2-8.6 9.2-4.5 0-7.6-3-7.6-6.9 0-3.6 2.5-6 5.6-6 2.9 0 4.8 1.9 4.8 4.3 0 2.2-1.4 3.6-3.3 3.6-1.6 0-2.7-1-2.7-2.3" />
+          </svg>
+          <span className="logo-type">Forma</span>
+        </button>
+        <span>
+          {stage === "start"
+            ? "A considered way to furnish your home"
+            : stage === "results"
+              ? "Your furnishing plan"
+              : stage === "checkout"
+                ? "Your final reference board"
+                : stage === "plan-loading"
+                  ? "Composing your plan"
+                  : `Set up your home · ${Math.max(stageOrder.indexOf(stage) + 1, 1)} / 4`}
+        </span>
+        <span className="user">JM</span>
+      </header>
+      {stage === "start" && (
+        <main className="landing">
+          <section className="landing-hero">
+            <div className="landing-copy">
+              <span className="kicker stage-enter">
+                A home, thoughtfully put together
+              </span>
+              <h1>
+                <span className="stage-enter">Find what fits.</span>
+                <span className="stage-enter">
+                  <i>Keep what matters.</i>
+                </span>
+              </h1>
+              <p className="stage-enter">
+                Tell Forma about your rooms, your budget and what you already
+                own. We’ll turn it into a practical, prioritised furnishing
+                plan.
+              </p>
+              <button
+                className="primary start-cta stage-enter"
+                onClick={() => setStage("rooms")}
+              >
+                <span>
+                  <small>Free planning flow</small>Start planning your home
+                </span>
+                <b>→</b>
+              </button>
+            </div>
+            <div className="landing-grid stage-enter">
+              <div>
+                <small>01 / Space</small>
+              </div>
+              <div>
+                <small>02 / Budget</small>
+              </div>
+              <div>
+                <small>03 / Priorities</small>
+              </div>
+              <span>One considered plan</span>
+            </div>
+            <span className="scroll-cue">
+              Scroll to understand <b>↓</b>
+            </span>
+          </section>
+          <section className="how-it-works" aria-labelledby="how-title">
+            <header>
+              <span className="kicker">How Forma works</span>
+              <h2 id="how-title">
+                A plan before
+                <br />
+                <i>the purchases.</i>
+              </h2>
+              <p>
+                From empty rooms to a prioritised shortlist in four considered
+                steps.
+              </p>
+            </header>
+            <div className="how-progress" aria-hidden="true">
+              <i />
+            </div>
+            <div className="how-grid">
+              <article className="how-step">
+                <span>01</span>
+                <h3>Map your rooms</h3>
+                <p>
+                  Add each space and its measurements, so every recommendation
+                  has somewhere to live.
+                </p>
+              </article>
+              <article className="how-step">
+                <span>02</span>
+                <h3>Set your budget</h3>
+                <p>
+                  Choose one realistic budget for the home. Forma keeps the
+                  whole plan in view.
+                </p>
+              </article>
+              <article className="how-step">
+                <span>03</span>
+                <h3>Keep what works</h3>
+                <p>
+                  Tell us what you already own. Good pieces stay; unnecessary
+                  replacements disappear.
+                </p>
+              </article>
+              <article className="how-step">
+                <span>04</span>
+                <h3>Choose priorities</h3>
+                <p>
+                  Essentials first, furniture next, finishing touches last—then
+                  receive your matched plan.
+                </p>
+              </article>
+            </div>
+            <button className="process-cta" onClick={() => setStage("rooms")}>
+              Build my furnishing plan <b>→</b>
+            </button>
+          </section>
+        </main>
+      )}
+      {stageOrder.includes(stage) && (
+        <main className="onboarding">
+          <button className="back stage-enter" onClick={back}>
+            ← Back
+          </button>
+          {stage === "rooms" && (
+            <section className="step-layout">
+              <StepCopy
+                n="01"
+                title={
+                  <>
+                    Which rooms
+                    <br />
+                    <i>are you furnishing?</i>
+                  </>
+                }
+                text="Measurements help us rule out pieces that won’t physically work."
+              />
+              <div className="step-panel stage-enter">
+                {rooms.map((r, index) => (
+                  <div className="room-row" key={r.id}>
+                    <label>
+                      Room {index + 1}
+                      <input
+                        value={r.name}
+                        onChange={(e) =>
+                          updateRoom(r.id, "name", e.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      Width
+                      <span>
+                        <input
+                          type="number"
+                          value={r.width}
+                          onChange={(e) =>
+                            updateRoom(r.id, "width", e.target.value)
+                          }
+                        />{" "}
+                        cm
+                      </span>
+                    </label>
+                    <label>
+                      Length
+                      <span>
+                        <input
+                          type="number"
+                          value={r.length}
+                          onChange={(e) =>
+                            updateRoom(r.id, "length", e.target.value)
+                          }
+                        />{" "}
+                        cm
+                      </span>
+                    </label>
+                  </div>
+                ))}
+                <button className="add" onClick={addRoom}>
+                  ＋ Add another room
+                </button>
+                <Next onClick={() => next("rooms")} />
+              </div>
+            </section>
+          )}
+          {stage === "budget" && (
+            <section className="step-layout">
+              <StepCopy
+                n="02"
+                title={
+                  <>
+                    Set a budget
+                    <br />
+                    <i>for the whole home.</i>
+                  </>
+                }
+                text="We’ll allocate more to essential pieces, while leaving room for finishing touches."
+              />
+              <div className="step-panel budget-panel stage-enter">
+                <span>Your furnishing budget</span>
+                <label>
+                  ${" "}
+                  <input
+                    type="number"
+                    value={budget}
+                    onChange={(e) => setBudget(+e.target.value)}
+                  />
+                </label>
+                <input
+                  type="range"
+                  min="1000"
+                  max="20000"
+                  step="500"
+                  value={budget}
+                  onChange={(e) => setBudget(+e.target.value)}
+                />
+                <div>
+                  <span>$1k</span>
+                  <span>$20k</span>
+                </div>
+                <Next onClick={() => next("budget")} />
+              </div>
+            </section>
+          )}
+          {stage === "owned" && (
+            <section className="step-layout">
+              <StepCopy
+                n="03"
+                title={
+                  <>
+                    What do you
+                    <br />
+                    <i>already own?</i>
+                  </>
+                }
+                text="We won’t recommend replacements for pieces you want to keep."
+              />
+              <div className="step-panel stage-enter">
+                <div className="choice-grid">
+                  {allItems.map((item) => (
+                    <button
+                      className={owned.includes(item) ? "selected" : ""}
+                      onClick={() => toggle(item, owned, setOwned)}
+                      key={item}
+                    >
+                      <i>{owned.includes(item) ? "✓" : "+"}</i>
+                      {item}
+                    </button>
+                  ))}
+                </div>
+                <Next onClick={() => next("owned")} />
+              </div>
+            </section>
+          )}
+          {stage === "priority" && (
+            <section className="step-layout">
+              <StepCopy
+                n="04"
+                title={
+                  <>
+                    What matters
+                    <br />
+                    <i>most right now?</i>
+                  </>
+                }
+                text="We’ll solve essentials first, then work down to the details."
+              />
+              <div className="step-panel stage-enter">
+                <div className="priority-list">
+                  {Object.entries(priorities).map(([item, priority]) => (
+                    <div key={item}>
+                      <span>{item}</span>
+                      <div>
+                        {(["High", "Mid", "Low"] as Priority[]).map((p) => (
+                          <button
+                            className={priority === p ? "selected" : ""}
+                            onClick={() =>
+                              setPriorities((v) => ({ ...v, [item]: p }))
+                            }
+                            key={p}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Next label="Build my plan" onClick={() => next("priority")} />
+              </div>
+            </section>
+          )}
+        </main>
+      )}
+      {stage === "matching" && (
+        <main className="matching">
+          <div className="match-ring">
+            <span>{rooms.length}</span>
+            <i />
+            <span>${Math.round(budget / 1000)}k</span>
+          </div>
+          <h1 className="stage-enter">Building your plan.</h1>
+          <div>
+            {(
+              [
+                "Rooms measured",
+                "Budget balanced",
+                "Priorities ranked",
+              ] as const
+            ).map((x) => (
+              <span className="match-chip" key={x}>
+                ✓ {x}
+              </span>
+            ))}
+          </div>
+        </main>
+      )}
+      {stage === "plan-loading" && (
+        <main className="plan-loading">
+          <div className="plan-loader-ring">
+            <span>Forma</span>
+            <i />
+          </div>
+          <h1 className="loader-label">
+            <span>Composing</span>
+            <span>
+              <i>your final board.</i>
+            </span>
+          </h1>
+          <p>
+            Gathering {saved.length} pieces · checking $
+            {budget.toLocaleString()} budget
+          </p>
+        </main>
+      )}
+      {detail && (
+        <div
+          className="dialog-backdrop"
+          onMouseDown={(event) =>
+            event.target === event.currentTarget && setDetail(null)
+          }
+        >
+          <section
+            className="product-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dialog-title"
+          >
+            <button
+              autoFocus
+              className="dialog-close"
+              onClick={() => setDetail(null)}
+              aria-label="Close product details"
+            >
+              ×
+            </button>
+            <div className="dialog-image">
+              <Placeholder product={detail} />
+              <span className={`priority-tag ${detail.priority.toLowerCase()}`}>
+                {detail.priority} priority
+              </span>
+            </div>
+            <span className="source">{detail.source}</span>
+            <h2 id="dialog-title">{detail.name}</h2>
+            <p className="dialog-category">
+              {detail.category} · Recommended for your plan
+            </p>
+            <div className="dialog-specs">
+              <span>
+                <small>Price</small>
+                <b>${detail.price.toLocaleString()}</b>
+              </span>
+              <span>
+                <small>Dimensions</small>
+                <b>
+                  {detail.width}W × {detail.depth}D cm
+                </b>
+              </span>
+              <span>
+                <small>Fit</small>
+                <b>
+                  {rooms.some(
+                    (r) =>
+                      detail.width < r.width * 0.72 &&
+                      detail.depth < r.length * 0.5,
+                  )
+                    ? "Fits your rooms"
+                    : "Check placement"}
+                </b>
+              </span>
+            </div>
+            <p className="dialog-note">
+              A suggested piece based on your available space, whole-home budget
+              and current priorities.
+            </p>
+            <button
+              className="remove-plan"
+              onClick={() => {
+                setSaved((s) => s.filter((id) => id !== detail.id));
+                setDetail(null);
+              }}
+            >
+              Remove from final plan
+            </button>
+          </section>
+        </div>
+      )}
+      {stage === "results" && (
+        <button
+          className="floating-review"
+          onClick={() => setStage("plan-loading")}
+        >
+          <span>
+            <small>{saved.length} shortlisted pieces</small>Review final plan
+          </span>
+          <b>→</b>
+        </button>
+      )}
+      {stage === "checkout" && (
+        <main className="checkout">
+          <header className="checkout-head stage-enter">
+            <button className="back" onClick={() => setStage("results")}>
+              ← Back to recommendations
+            </button>
+            <span className="kicker">Your final reference board</span>
+            <h1>
+              Everything for
+              <br />
+              <i>your new home.</i>
+            </h1>
+            <p>
+              Use this plan while you shop. Update priorities or remove pieces
+              as your home comes together.
+            </p>
+          </header>
+          <section className="checkout-layout">
+            <div className="checkout-board stage-enter">
+              <div className="checkout-board-head">
+                <span>
+                  <b>Forma</b>Whole-home board
+                </span>
+                <span>
+                  {rooms.length} rooms · {saved.length} pieces
+                </span>
+              </div>
+              <div className="checkout-canvas">
+                {saved.slice(0, 6).map((id, i) => {
+                  const p = products.find((x) => x.id === id)!;
+                  return (
+                    <article
+                      className={`checkout-pin checkout-pin-${i + 1}`}
+                      key={id}
+                    >
+                      <Placeholder product={p} />
+                      <span>{p.name}</span>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="checkout-board-foot">
+                <span>Budget ${budget.toLocaleString()}</span>
+                <span>Updated today</span>
+              </div>
+            </div>
+            <div className="checkout-list stage-enter">
+              <div className="checkout-list-head">
+                <span className="kicker">Purchase list</span>
+                <b>{saved.length} items</b>
+              </div>
+              {saved.map((id) => {
+                const p = products.find((x) => x.id === id)!;
+                return (
+                  <article className="checkout-item" key={id}>
+                    <div className="mini-placeholder">
+                      <span>{p.category.slice(0, 1)}</span>
+                    </div>
+                    <div>
+                      <h2>{p.name}</h2>
+                      <p>
+                        {p.source} · {p.width} × {p.depth} cm
+                      </p>
+                      <select
+                        aria-label={`Priority for ${p.name}`}
+                        defaultValue={p.priority}
+                      >
+                        <option>High</option>
+                        <option>Mid</option>
+                        <option>Low</option>
+                      </select>
+                    </div>
+                    <b>${p.price}</b>
+                    <button
+                      onClick={() => setSaved((s) => s.filter((x) => x !== id))}
+                      aria-label={`Remove ${p.name}`}
+                    >
+                      ×
+                    </button>
+                  </article>
+                );
+              })}
+              <div className="checkout-total">
+                <span>
+                  <small>Shortlist total</small>${total.toLocaleString()}
+                </span>
+                <span>
+                  <small>Budget remaining</small>$
+                  {Math.max(budget - total, 0).toLocaleString()}
+                </span>
+              </div>
+              <button className="export-button" onClick={() => window.print()}>
+                Print or save this plan <b>↗</b>
+              </button>
+            </div>
+          </section>
+        </main>
+      )}
+      {stage === "results" && (
+        <main className="results">
+          <section className="plan-head">
+            <button className="back" onClick={() => setStage("rooms")}>
+              ← Edit plan
+            </button>
+            <span className="kicker stage-enter">
+              Your home / furnishing plan
+            </span>
+            <h1 className="stage-enter">
+              Start with
+              <br />
+              <i>what matters.</i>
+            </h1>
+            <div className="summary stage-enter">
+              <span>
+                <b>{rooms.length}</b>Rooms
+              </span>
+              <span>
+                <b>${budget.toLocaleString()}</b>Budget
+              </span>
+              <span>
+                <b>{owned.length}</b>Already owned
+              </span>
+              <span>
+                <b>${total.toLocaleString()}</b>Shortlisted
+              </span>
+            </div>
+          </section>
+          <section className="catalog">
+            <div className="tools">
+              <div className="filters">
+                {(["All", "High", "Mid", "Low"] as const).map((p) => (
+                  <button
+                    className={filter === p ? "on" : ""}
+                    onClick={() => changeFilter(p)}
+                    key={p}
+                  >
+                    {p}
+                    {p !== "All" ? " priority" : ""}
+                  </button>
+                ))}
+              </div>
+              <span className="recommend-note">
+                Ranked around your needs and budget
+              </span>
+            </div>
+            <div className="count">
+              <span>{visible.length} suggested pieces</span>
+              <span>Grey boxes are image placeholders</span>
+            </div>
+            <div className="product-grid" ref={grid}>
+              {visible.map((p, i) => {
+                const fit = rooms.some(
+                  (r) => p.width < r.width * 0.72 && p.depth < r.length * 0.5,
+                );
+                return (
+                  <article
+                    className={`product-card offset-${i % 3}`}
+                    data-flip-id={p.id}
+                    key={p.id}
+                  >
+                    <div className="product-image">
+                      <Placeholder product={p} />
+                      <span
+                        className={`priority-tag ${p.priority.toLowerCase()}`}
+                      >
+                        {p.priority} priority
+                      </span>
+                      <button
+                        aria-label={`${saved.includes(p.id) ? "Remove" : "Pin"} ${p.name}`}
+                        aria-pressed={saved.includes(p.id)}
+                        onClick={() =>
+                          setSaved((s) =>
+                            s.includes(p.id)
+                              ? s.filter((x) => x !== p.id)
+                              : [...s, p.id],
+                          )
+                        }
+                      >
+                        {saved.includes(p.id) ? "✓" : "+"}
+                      </button>
+                    </div>
+                    <span className="source">
+                      {p.source} · {fit ? "Fits a room" : "Check dimensions"}
+                    </span>
+                    <h2>{p.name}</h2>
+                    <p>{p.category}</p>
+                    <div className="price">
+                      <b>${p.price}</b>
+                      <span>
+                        {p.width}W × {p.depth}D cm
+                      </span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+          <section className="board-story">
+            <div className="board-inner">
+              <div className="story-copy">
+                <span className="kicker">Your shortlist / resolved</span>
+                <h2>
+                  A home
+                  <br />
+                  <i>with intent.</i>
+                </h2>
+                <p>Essentials first. Finishing touches when you’re ready.</p>
+                <div className="story-steps">
+                  <span>01 Prioritise</span>
+                  <span>02 Check fit</span>
+                  <span>03 Compose</span>
+                  <div className="story-progress">
+                    <i />
+                  </div>
+                </div>
+                <p className="budget-copy">
+                  ${total.toLocaleString()} shortlisted · $
+                  {Math.max(budget - total, 0).toLocaleString()} remaining
+                </p>
+              </div>
+              <div className="board">
+                <div className="board-surface">
+                  <span>
+                    <b>Whole home</b>Purchase plan
+                  </span>
+                  <small>{saved.length} pieces</small>
+                </div>
+                {saved.slice(0, 4).map((id, i) => {
+                  const p = products.find((x) => x.id === id)!;
+                  return (
+                    <div className={`board-pin pin-${i + 1}`} key={id}>
+                      <Placeholder product={p} />
+                      <span>
+                        {p.name}
+                        <b>${p.price}</b>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        </main>
+      )}
+    </div>
+  );
+}
+
+function StepCopy({
+  n,
+  title,
+  text,
+}: {
+  n: string;
+  title: ReactNode;
+  text: string;
+}) {
+  return (
+    <div className="step-copy">
+      <span className="kicker stage-enter">Step {n} / 04</span>
+      <h1 className="stage-enter">{title}</h1>
+      <p className="stage-enter">{text}</p>
+    </div>
+  );
+}
+function Next({
+  onClick,
+  label = "Continue",
+}: {
+  onClick: () => void;
+  label?: string;
+}) {
+  return (
+    <button className="primary next" onClick={onClick}>
+      {label}
+      <b>→</b>
+    </button>
+  );
+}
