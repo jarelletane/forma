@@ -1,182 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-gsap.registerPlugin(Flip, ScrollTrigger);
+import { Header } from "./components/Header";
+import { Placeholder } from "./components/Placeholder";
+import { Next, StepCopy } from "./components/StepControls";
+import { allItems, products, stageOrder } from "./data/products";
+import type { Priority, Product, Room, Stage } from "./types";
 
-type Stage =
-  | "start"
-  | "rooms"
-  | "budget"
-  | "owned"
-  | "priority"
-  | "matching"
-  | "results"
-  | "plan-loading"
-  | "checkout";
-type Priority = "High" | "Mid" | "Low";
-type Room = { id: number; name: string; width: number; length: number };
-type Product = {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  width: number;
-  depth: number;
-  priority: Priority;
-  source: string;
-};
-const allItems = [
-  "Sofa",
-  "Fridge",
-  "Washing machine",
-  "Bed",
-  "Dining table",
-  "Dining chairs",
-  "Coffee table",
-  "Floor lamp",
-  "Rug",
-  "Side table",
-  "Artwork",
-  "Vases",
-];
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Marlow three-seat sofa",
-    category: "Sofa",
-    price: 1890,
-    width: 224,
-    depth: 94,
-    priority: "High",
-    source: "In stock",
-  },
-  {
-    id: 2,
-    name: "Rove lounge chair",
-    category: "Chair",
-    price: 640,
-    width: 76,
-    depth: 82,
-    priority: "Mid",
-    source: "Marketplace",
-  },
-  {
-    id: 3,
-    name: "Nord 420 fridge",
-    category: "Fridge",
-    price: 1290,
-    width: 70,
-    depth: 69,
-    priority: "High",
-    source: "In stock",
-  },
-  {
-    id: 4,
-    name: "Daily front loader",
-    category: "Washing machine",
-    price: 780,
-    width: 60,
-    depth: 64,
-    priority: "High",
-    source: "In stock",
-  },
-  {
-    id: 5,
-    name: "Field oak dining table",
-    category: "Dining table",
-    price: 980,
-    width: 180,
-    depth: 90,
-    priority: "Mid",
-    source: "Made to order",
-  },
-  {
-    id: 6,
-    name: "Cove dining chair",
-    category: "Dining chairs",
-    price: 220,
-    width: 49,
-    depth: 52,
-    priority: "Mid",
-    source: "Marketplace",
-  },
-  {
-    id: 7,
-    name: "Lowline coffee table",
-    category: "Coffee table",
-    price: 460,
-    width: 110,
-    depth: 60,
-    priority: "Mid",
-    source: "In stock",
-  },
-  {
-    id: 8,
-    name: "Ridge floor lamp",
-    category: "Floor lamp",
-    price: 420,
-    width: 32,
-    depth: 32,
-    priority: "Mid",
-    source: "Marketplace",
-  },
-  {
-    id: 9,
-    name: "Textile study rug",
-    category: "Rug",
-    price: 890,
-    width: 240,
-    depth: 170,
-    priority: "Mid",
-    source: "In stock",
-  },
-  {
-    id: 10,
-    name: "Plinth side table",
-    category: "Side table",
-    price: 310,
-    width: 46,
-    depth: 40,
-    priority: "Low",
-    source: "In stock",
-  },
-  {
-    id: 11,
-    name: "Contour print 02",
-    category: "Artwork",
-    price: 180,
-    width: 60,
-    depth: 4,
-    priority: "Low",
-    source: "Edition",
-  },
-  {
-    id: 12,
-    name: "Pair of stone vessels",
-    category: "Vases",
-    price: 140,
-    width: 24,
-    depth: 24,
-    priority: "Low",
-    source: "Marketplace",
-  },
-];
-const stageOrder: Stage[] = ["rooms", "budget", "owned", "priority"];
-
-function Placeholder({ product }: { product: Product }) {
-  return (
-    <div
-      className={`placeholder priority-${product.priority.toLowerCase()}`}
-      aria-label={`Image placeholder for ${product.name}`}
-      role="img"
-    >
-      <span>{product.category}</span>
-      <i />
-      <small>Image coming soon</small>
-    </div>
-  );
-}
+gsap.registerPlugin(Flip);
 
 export function App() {
   const root = useRef<HTMLDivElement>(null),
@@ -323,20 +154,48 @@ export function App() {
       return;
     }
     const ctx = gsap.context(() => {
+      gsap.set(".plan-stroke", { strokeDasharray: 900, strokeDashoffset: 900 });
       gsap
         .timeline({ onComplete: () => setStage("results") })
-        .from(".match-ring", { scale: 0.7, opacity: 0, duration: 0.45 })
-        .to(".match-ring", {
-          rotation: 180,
-          duration: 1.25,
-          ease: "power2.inOut",
+        .from(".matching-copy>*", {
+          y: 22,
+          opacity: 0,
+          stagger: 0.08,
+          duration: 0.5,
+          ease: "power3.out",
         })
-        .from(
-          ".match-chip",
-          { y: 20, opacity: 0, stagger: 0.1, duration: 0.45 },
-          0.2,
-        )
-        .to(".matching", { opacity: 0, duration: 0.3 }, 1.65);
+        .to(".plan-stroke", {
+          strokeDashoffset: 0,
+          duration: 1.05,
+          ease: "power2.inOut",
+        }, 0.15)
+        .from(".match-object", {
+          x: () => gsap.utils.random(-180, 180),
+          y: () => gsap.utils.random(-130, 130),
+          rotation: () => gsap.utils.random(-35, 35),
+          scale: 0.65,
+          opacity: 0,
+          stagger: 0.09,
+          duration: 0.7,
+          ease: "back.out(1.7)",
+        }, 0.55)
+        .to(".match-progress i", {
+          scaleX: 1,
+          duration: 1.15,
+          ease: "power2.inOut",
+        }, 0.8)
+        .from(".match-check", {
+          y: 10,
+          opacity: 0,
+          stagger: 0.18,
+          duration: 0.35,
+        }, 1.15)
+        .to(".room-plan", {
+          backgroundColor: "#f5f1e9",
+          boxShadow: "0 24px 70px rgba(35, 31, 24, .12)",
+          duration: 0.45,
+        }, 1.85)
+        .to(".matching", { opacity: 0, duration: 0.35 }, 2.75);
     }, root);
     return () => ctx.revert();
   }, [stage]);
@@ -479,30 +338,7 @@ export function App() {
 
   return (
     <div ref={root}>
-      <header className="topbar">
-        <button
-          className="logo"
-          onClick={() => setStage("start")}
-          aria-label="Forma home"
-        >
-          <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
-            <path d="M16 27.5C9.1 27.5 4.5 23 4.5 16.8 4.5 9.9 9.4 4.5 16.4 4.5c6.6 0 11.1 4.4 11.1 10.2 0 5.5-3.8 9.2-8.6 9.2-4.5 0-7.6-3-7.6-6.9 0-3.6 2.5-6 5.6-6 2.9 0 4.8 1.9 4.8 4.3 0 2.2-1.4 3.6-3.3 3.6-1.6 0-2.7-1-2.7-2.3" />
-          </svg>
-          <span className="logo-type">Forma</span>
-        </button>
-        <span>
-          {stage === "start"
-            ? "A considered way to furnish your home"
-            : stage === "results"
-              ? "Your furnishing plan"
-              : stage === "checkout"
-                ? "Your final reference board"
-                : stage === "plan-loading"
-                  ? "Composing your plan"
-                  : `Set up your home · ${Math.max(stageOrder.indexOf(stage) + 1, 1)} / 4`}
-        </span>
-        <span className="user">JM</span>
-      </header>
+      <Header stage={stage} onHome={() => setStage("start")} />
       {stage === "start" && (
         <main className="landing">
           <section className="landing-hero">
@@ -779,24 +615,30 @@ export function App() {
       )}
       {stage === "matching" && (
         <main className="matching">
-          <div className="match-ring">
-            <span>{rooms.length}</span>
-            <i />
-            <span>${Math.round(budget / 1000)}k</span>
+          <div className="matching-copy">
+            <span className="kicker">Forma is considering</span>
+            <h1>Making space<br /><i>for what fits.</i></h1>
+            <p>{rooms.length} room{rooms.length === 1 ? "" : "s"} · ${budget.toLocaleString()} budget · {Object.keys(priorities).length} priorities</p>
           </div>
-          <h1 className="stage-enter">Building your plan.</h1>
-          <div>
-            {(
-              [
-                "Rooms measured",
-                "Budget balanced",
-                "Priorities ranked",
-              ] as const
-            ).map((x) => (
-              <span className="match-chip" key={x}>
-                ✓ {x}
-              </span>
-            ))}
+          <div className="matching-visual" aria-label="Forma checking products against your room and budget">
+            <div className="room-plan">
+              <svg viewBox="0 0 560 420" aria-hidden="true">
+                <path className="plan-stroke" d="M30 35h500v350H30zM30 160h145V35M390 35v125h140M175 260h215v125M390 160v100" />
+                <path className="plan-stroke plan-detail" d="M65 195h75v115H65zM215 72h135v62H215zM426 205h67v110h-67z" />
+              </svg>
+              <span className="plan-label label-lounge">Lounge</span>
+              <span className="plan-label label-bedroom">Bedroom</span>
+              <div className="match-object object-sofa">Sofa<small>224 × 94</small></div>
+              <div className="match-object object-rug">Rug<small>240 × 170</small></div>
+              <div className="match-object object-table">Table<small>180 × 90</small></div>
+              <div className="match-object object-lamp">Lamp</div>
+            </div>
+            <div className="match-progress"><i /></div>
+            <div className="match-checks">
+              <span className="match-check">✓ Measurements checked</span>
+              <span className="match-check">✓ Budget balanced</span>
+              <span className="match-check">✓ Priorities composed</span>
+            </div>
           </div>
         </main>
       )}
@@ -1146,37 +988,5 @@ export function App() {
         </main>
       )}
     </div>
-  );
-}
-
-function StepCopy({
-  n,
-  title,
-  text,
-}: {
-  n: string;
-  title: ReactNode;
-  text: string;
-}) {
-  return (
-    <div className="step-copy">
-      <span className="kicker stage-enter">Step {n} / 04</span>
-      <h1 className="stage-enter">{title}</h1>
-      <p className="stage-enter">{text}</p>
-    </div>
-  );
-}
-function Next({
-  onClick,
-  label = "Continue",
-}: {
-  onClick: () => void;
-  label?: string;
-}) {
-  return (
-    <button className="primary next" onClick={onClick}>
-      {label}
-      <b>→</b>
-    </button>
   );
 }
